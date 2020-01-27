@@ -10,8 +10,6 @@ import {CustomRepositoryNotFoundError} from "../error/CustomRepositoryNotFoundEr
 import {EntityNotFoundError} from "../error/EntityNotFoundError";
 import {NoNeedToReleaseEntityManagerError} from "../error/NoNeedToReleaseEntityManagerError";
 import {QueryRunnerProviderAlreadyReleasedError} from "../error/QueryRunnerProviderAlreadyReleasedError";
-import {RepositoryNotFoundError} from "../error/RepositoryNotFoundError";
-import {RepositoryNotTreeError} from "../error/RepositoryNotTreeError";
 import {TreeRepositoryNotSupportedError} from "../error/TreeRepositoryNotSupportedError";
 import {QueryDeepPartialEntity} from "../query-builder/QueryPartialEntity";
 import {FindExtraOptions, FindOptions, FindOptionsWhere} from "../find-options/FindOptions";
@@ -31,11 +29,14 @@ import {AbstractRepository} from "../repository/AbstractRepository";
 import {MongoRepository} from "../repository/MongoRepository";
 import {RemoveOptions} from "../repository/RemoveOptions";
 import {Repository} from "../repository/Repository";
-import {RepositoryFactory} from "../repository/RepositoryFactory";
 import {SaveOptions} from "../repository/SaveOptions";
 import {TreeRepository} from "../repository/TreeRepository";
 import {ObjectUtils} from "../util/ObjectUtils";
 import * as Observable from "zen-observable";
+import {createLiteralTreeRepository} from "../repository/LiteralTreeRepository";
+import {EntityTarget} from "../common/EntityTarget";
+import {createLiteralMongoRepository} from "../repository/LiteralMongoRepository";
+import {createLiteralRepository} from "../repository/LiteralRepository";
 
 /**
  * Entity manager supposed to work with any entity, automatically find its repository and call its methods,
@@ -63,9 +64,14 @@ export class EntityManager {
     // -------------------------------------------------------------------------
 
     /**
-     * Once created and then reused by en repositories.
+     * Once created and then reused by repositories.
      */
     protected repositories: Repository<any>[] = [];
+
+    /**
+     * Once created and then reused by repositories.
+     */
+    protected treeRepositories: TreeRepository<any>[] = [];
 
     /**
      * Plain to object transformer used in create and merge operations.
@@ -1111,22 +1117,32 @@ export class EntityManager {
      * repository aggregator, where each repository is individually created for this entity manager.
      * When single database connection is not used, repository is being obtained from the connection.
      */
-    getRepository<Entity>(target: ObjectType<Entity>|EntitySchema<Entity>|string): Repository<Entity> {
-
-        // throw exception if there is no repository with this target registered
-        if (!this.connection.hasMetadata(target))
-            throw new RepositoryNotFoundError(this.connection.name, target);
+    getRepository<Entity>(target: EntityTarget<Entity>): Repository<Entity> {
 
         // find already created repository instance and return it if found
-        const metadata = this.connection.getMetadata(target);
-        const repository = this.repositories.find(repository => repository.metadata === metadata);
+        const repository = this.repositories.find(repository => repository.target === target);
         if (repository)
             return repository;
 
         // if repository was not found then create it, store its instance and return it
-        const newRepository = new RepositoryFactory().create(this, metadata, this.queryRunner);
-        this.repositories.push(newRepository);
-        return newRepository;
+        if (this.connection.driver instanceof MongoDriver) {
+            const newRepository = createLiteralMongoRepository({
+                manager: this as any,
+                target,
+                queryRunner: this.queryRunner,
+            });
+            this.repositories.push(newRepository);
+            return newRepository;
+
+        } else {
+            const newRepository = createLiteralRepository({
+                manager: this,
+                target,
+                queryRunner: this.queryRunner,
+            });
+            this.repositories.push(newRepository);
+            return newRepository;
+        }
     }
 
     /**
@@ -1135,18 +1151,25 @@ export class EntityManager {
      * repository aggregator, where each repository is individually created for this entity manager.
      * When single database connection is not used, repository is being obtained from the connection.
      */
-    getTreeRepository<Entity>(target: ObjectType<Entity>|EntitySchema<Entity>|string): TreeRepository<Entity> {
+    getTreeRepository<Entity>(target: EntityTarget<Entity>): TreeRepository<Entity> {
 
         // tree tables aren't supported by some drivers (mongodb)
         if (this.connection.driver.treeSupport === false)
             throw new TreeRepositoryNotSupportedError(this.connection.driver);
 
-        // check if repository is real tree repository
-        const repository = this.getRepository(target);
-        if (!(repository instanceof TreeRepository))
-            throw new RepositoryNotTreeError(target);
+        // find already created repository instance and return it if found
+        const repository = this.treeRepositories.find(repository => repository.target === target);
+        if (repository)
+            return repository;
 
-        return repository;
+        // check if repository is real tree repository
+        const newRepository = createLiteralTreeRepository({
+            manager: this,
+            target,
+            queryRunner: this.queryRunner,
+        });
+        this.treeRepositories.push(newRepository);
+        return newRepository;
     }
 
     /**
@@ -1174,8 +1197,7 @@ export class EntityManager {
         if (entityRepositoryInstance instanceof AbstractRepository) {
             if (!(entityRepositoryInstance as any)["manager"])
                 (entityRepositoryInstance as any)["manager"] = this;
-        }
-        if (entityRepositoryInstance instanceof Repository) {
+        } else {
             if (!entityMetadata)
                 throw new CustomRepositoryCannotInheritRepositoryError(customRepository);
 

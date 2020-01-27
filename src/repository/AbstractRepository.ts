@@ -14,7 +14,7 @@ import { EntitySchema } from "../entity-schema/EntitySchema";
  * Contains all most-necessary methods to simplify code in the custom repository.
  * All methods are protected thus not exposed and it allows to create encapsulated custom repository.
  *
- * @experimental
+ * @deprecated
  */
 export class AbstractRepository<Entity extends ObjectLiteral> {
 

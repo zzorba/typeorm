@@ -41,6 +41,7 @@ import {IsolationLevel} from "../driver/types/IsolationLevel";
 import {AuroraDataApiDriver} from "../driver/aurora-data-api/AuroraDataApiDriver";
 import { EntityFactoryInterface } from "../entity-factory/EntityFactoryInterface";
 import { DefaultEntityFactory } from "../entity-factory/DefaultEntityFactory";
+import {EntityTarget} from "../common/EntityTarget";
 
 /**
  * Connection is a single database ORM connection to a specific database.
@@ -71,7 +72,7 @@ export class Connection {
     /**
      * Database driver used by this connection.
      */
-    readonly driver: Driver;
+    driver: Driver;
 
     /**
      * EntityManager of this connection.
@@ -81,12 +82,12 @@ export class Connection {
     /**
      * Naming strategy used in the connection.
      */
-    readonly namingStrategy: NamingStrategyInterface;
+    namingStrategy: NamingStrategyInterface;
 
     /**
      * Logger used to log orm events.
      */
-    readonly logger: Logger;
+    logger: Logger;
 
     /**
      * Migration instances that are registered for this connection.
@@ -101,7 +102,7 @@ export class Connection {
     /**
      * Entity factory used to instantiate entities objects
      */
-    readonly entityFactory: EntityFactoryInterface;
+    entityFactory: EntityFactoryInterface;
 
     /**
      * Observers observing queries.
@@ -116,7 +117,7 @@ export class Connection {
     /**
      * Used to work with query result cache.
      */
-    readonly queryResultCache?: QueryResultCache;
+    queryResultCache?: QueryResultCache;
 
     /**
      * Used to load relations and work with lazy relations.
@@ -135,12 +136,8 @@ export class Connection {
     constructor(options: ConnectionOptions) {
         this.name = options.name || "default";
         this.options = options;
-        this.logger = new LoggerFactory().create(this.options.logger, this.options.logging);
-        this.driver = new DriverFactory().create(this);
+        this.setOptions(options);
         this.manager = this.createEntityManager();
-        this.namingStrategy = options.namingStrategy || new DefaultNamingStrategy();
-        this.entityFactory = options.entityFactory || new DefaultEntityFactory();
-        this.queryResultCache = options.cache ? new QueryResultCacheFactory(this).create() : undefined;
         this.relationLoader = new RelationLoader(this);
         this.relationIdLoader = new RelationIdLoader(this);
         this.isConnected = false;
@@ -180,6 +177,24 @@ export class Connection {
     // -------------------------------------------------------------------------
 
     /**
+     * Updates current connection options with provided options.
+     */
+    setOptions(options: Partial<ConnectionOptions>): this {
+        Object.assign(this.options, options);
+
+        this.logger = new LoggerFactory().create(this.options.logger, this.options.logging);
+        this.driver = new DriverFactory().create(this);
+        this.namingStrategy = options.namingStrategy || new DefaultNamingStrategy();
+        this.entityFactory = options.entityFactory || new DefaultEntityFactory();
+        this.queryResultCache = options.cache ? new QueryResultCacheFactory(this).create() : undefined;
+
+        // build all metadatas to make sure options are valid
+        this.buildMetadatas();
+
+        return this;
+    }
+
+    /**
      * Performs connection to the database.
      * This method should be called once on application bootstrap.
      * This method not necessarily creates database connection (depend on database type),
@@ -200,9 +215,6 @@ export class Connection {
         ObjectUtils.assign(this, { isConnected: true });
 
         try {
-
-            // build all metadatas registered in the current connection
-            this.buildMetadatas();
 
             await this.driver.afterConnect();
 
@@ -355,7 +367,7 @@ export class Connection {
     /**
      * Gets repository for the given entity.
      */
-    getRepository<Entity>(target: ObjectType<Entity>|EntitySchema<Entity>|string): Repository<Entity> {
+    getRepository<Entity>(target: EntityTarget<Entity>): Repository<Entity> {
         return this.manager.getRepository(target);
     }
 
@@ -380,6 +392,8 @@ export class Connection {
 
     /**
      * Gets custom entity repository marked with @EntityRepository decorator.
+     *
+     * @deprecated
      */
     getCustomRepository<T>(customRepository: ObjectType<T>): T {
         return this.manager.getCustomRepository(customRepository);

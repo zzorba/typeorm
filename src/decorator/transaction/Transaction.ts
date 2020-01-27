@@ -1,4 +1,4 @@
-import {getConnection, getMetadataArgsStorage, MongoRepository, Repository, TreeRepository, EntityManager} from "../../";
+import {getConnection, getMetadataArgsStorage, EntityManager} from "../../";
 import {TransactionOptions} from "../options/TransactionOptions";
 import {IsolationLevel} from "../../driver/types/IsolationLevel";
 
@@ -72,13 +72,13 @@ export function Transaction(connectionOrOptions?: string | TransactionOptions): 
 
                     // detect type of the repository and get instance from transaction entity manager
                     switch (metadata.repositoryType) {
-                        case Repository:
+                        case "Repository":
                             repositoryInstance = entityManager.getRepository(metadata.entityType!);
                             break;
-                        case MongoRepository:
+                        case "MongoRepository":
                             repositoryInstance = entityManager.getMongoRepository(metadata.entityType!);
                             break;
-                        case TreeRepository:
+                        case "TreeRepository":
                             repositoryInstance = entityManager.getTreeRepository(metadata.entityType!);
                             break;
                         // if not the TypeORM's ones, there must be custom repository classes

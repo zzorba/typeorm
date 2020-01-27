@@ -50,7 +50,7 @@ import {ObjectUtils} from "../util/ObjectUtils";
 import {DriverUtils} from "../driver/DriverUtils";
 import {AuroraDataApiDriver} from "../driver/aurora-data-api/AuroraDataApiDriver";
 import {ApplyValueTransformers} from "../util/ApplyValueTransformers";
-import { Connection } from '..';
+import { Connection } from "..";
 
 type QueryFindOptions<E> = // TODO: Think of better name
     Pick<FindOptions<E>, "select">
@@ -60,7 +60,8 @@ type QueryFindOptions<E> = // TODO: Think of better name
     & Pick<FindOptions<E>, "skip">
     & Pick<FindOptions<E>, "take">
     & Pick<FindExtraOptions, "loadRelationIds">
-    & Pick<FindExtraOptions, "pagination">
+    & Pick<FindExtraOptions, "pagination">;
+
 /**
  * Allows to build complex sql queries in a fashion way and execute those queries.
  */
@@ -82,9 +83,9 @@ export class SelectQueryBuilder<Entity> extends QueryBuilder<Entity> implements 
      */
     constructor(connectionOrQueryBuilder: Connection | QueryBuilder<any>, queryRunner?: QueryRunner) {
         // TODO: Proper clone of findOptions field(deep, no as any)
-        super(connectionOrQueryBuilder as any, queryRunner)
+        super(connectionOrQueryBuilder as any, queryRunner);
         if (connectionOrQueryBuilder instanceof QueryBuilder) {
-            this.findOptions = (connectionOrQueryBuilder as  SelectQueryBuilder<Entity>).findOptions
+            this.findOptions = (connectionOrQueryBuilder as  SelectQueryBuilder<Entity>).findOptions;
         }
     }
 
@@ -136,7 +137,7 @@ export class SelectQueryBuilder<Entity> extends QueryBuilder<Entity> implements 
             take: normalizedFindOptions.take,
             pagination: normalizedFindOptions.options && normalizedFindOptions.options.pagination,
             loadRelationIds: normalizedFindOptions.options && normalizedFindOptions.options.loadRelationIds
-        }
+        };
         this.applyFindOptionsOrmOptions(normalizedFindOptions);
         return this;
     }
@@ -1958,7 +1959,7 @@ export class SelectQueryBuilder<Entity> extends QueryBuilder<Entity> implements 
         }
 
     }
-    protected applyFindOptionsOrmOptions(findOptions:FindOptions<Entity>) {
+    protected applyFindOptionsOrmOptions(findOptions: FindOptions<Entity>) {
 
         if (this.expressionMap.mainAlias!.metadata) {
 
@@ -1983,9 +1984,9 @@ export class SelectQueryBuilder<Entity> extends QueryBuilder<Entity> implements 
             }
             if (findOptions.lock) {
                 if (findOptions.lock.mode === "optimistic") {
-                    this.setLock(findOptions.lock.mode, findOptions.lock.version)
+                    this.setLock(findOptions.lock.mode, findOptions.lock.version);
                 } else {
-                    this.setLock(findOptions.lock.mode)
+                    this.setLock(findOptions.lock.mode);
                 }
             }
 

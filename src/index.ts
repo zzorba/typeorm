@@ -1,6 +1,7 @@
 /*!
  */
 import "reflect-metadata";
+import "zen-observable";
 import {ConnectionManager} from "./connection/ConnectionManager";
 import {Connection} from "./connection/Connection";
 import {MetadataArgsStorage} from "./metadata-args/MetadataArgsStorage";
@@ -25,6 +26,7 @@ import {EntitySchema} from "./entity-schema/EntitySchema";
 
 export * from "./container";
 export * from "./common/ObjectType";
+export * from "./common/EntityTarget";
 export * from "./common/ObjectLiteral";
 export * from "./common/DeepPartial";
 export * from "./error/QueryFailedError";
@@ -135,6 +137,8 @@ export {WhereExpression} from "./query-builder/WhereExpression";
 export {InsertResult} from "./query-builder/result/InsertResult";
 export {UpdateResult} from "./query-builder/result/UpdateResult";
 export {DeleteResult} from "./query-builder/result/DeleteResult";
+export {QueryPartialEntity} from "./query-builder/QueryPartialEntity";
+export {QueryDeepPartialEntity} from "./query-builder/QueryPartialEntity";
 export {QueryRunner} from "./query-runner/QueryRunner";
 export {EntityManager} from "./entity-manager/EntityManager";
 export {MongoEntityManager} from "./entity-manager/MongoEntityManager";
@@ -283,6 +287,13 @@ export function getSqljsManager(connectionName: string = "default"): SqljsEntity
  */
 export function getRepository<Entity>(entityClass: ObjectType<Entity>|EntitySchema<Entity>|string, connectionName: string = "default"): Repository<Entity> {
     return getConnectionManager().get(connectionName).getRepository<Entity>(entityClass);
+}
+
+/**
+ * Creates a new connection without connection establishment.
+ */
+export function connection(options: ConnectionOptions) {
+    return getConnectionManager().create(options);
 }
 
 /**
