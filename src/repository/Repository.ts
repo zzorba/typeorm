@@ -24,6 +24,11 @@ export type Repository<Entity extends ObjectLiteral> = {
     // -------------------------------------------------------------------------
 
     /**
+     * Can be used to determine what object type is used.
+     */
+    readonly instanceof: "Repository"
+
+    /**
      * Entity Manager used by this repository.
      */
     readonly manager: EntityManager;

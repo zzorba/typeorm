@@ -59,6 +59,7 @@ export function createLiteralTreeRepository<Entity>({ manager, target, queryRunn
 
     return {
         ...createLiteralRepository({ manager, target, queryRunner }),
+        instanceof: "TreeRepository",
 
         async findTrees(): Promise<Entity[]> {
             const roots = await this.findRoots();

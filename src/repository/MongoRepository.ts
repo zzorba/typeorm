@@ -41,6 +41,11 @@ import {FindExtraOptions, FindOptions, FindOptionsWhere} from "../find-options/F
  */
 export type MongoRepository<Entity extends ObjectLiteral> = Repository<Entity> & {
 
+    /**
+     * Can be used to determine what object type is used.
+     */
+    readonly instanceof: "MongoRepository"
+
     // -------------------------------------------------------------------------
     // Public Properties
     // -------------------------------------------------------------------------
