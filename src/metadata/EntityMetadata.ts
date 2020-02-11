@@ -104,7 +104,7 @@ export class EntityMetadata {
     /**
      * Enables Sqlite "WITHOUT ROWID" modifier for the "CREATE TABLE" statement
      */
-    withoutRowid?: boolean = false;    
+    withoutRowid?: boolean = false;
 
     /**
      * Original user-given table name (taken from schema or @Entity(tableName) decorator).
@@ -511,19 +511,23 @@ export class EntityMetadata {
     /**
      * Creates a new entity.
      */
-    create(queryRunner?: QueryRunner): any {
+    create(queryRunner?: QueryRunner, pojo: boolean = false): any {
         // if target is set to a function (e.g. class) that can be created then create it
         let ret: any;
-        if (this.target instanceof Function) {
+        if (this.target instanceof Function && !pojo) {
             ret = this.connection.entityFactory.createEntity(this.target, this);
-            this.lazyRelations.forEach(relation => this.connection.relationLoader.enableLazyLoad(relation, ret, queryRunner));
-            return ret;
+        } else {
+            // otherwise simply return a new empty object
+            ret = {};
         }
 
-        // otherwise simply return a new empty object
-        const newObject = {};
-        this.lazyRelations.forEach(relation => this.connection.relationLoader.enableLazyLoad(relation, newObject, queryRunner));
-        return newObject;
+        // add "typename" property
+        if (this.connection.options.typename) {
+            ret[this.connection.options.typename] = this.targetName;
+        }
+
+        this.lazyRelations.forEach(relation => this.connection.relationLoader.enableLazyLoad(relation, ret, queryRunner));
+        return ret;
     }
 
     /**
