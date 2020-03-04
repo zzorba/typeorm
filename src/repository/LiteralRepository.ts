@@ -24,7 +24,7 @@ export function createLiteralRepository<Entity>({ manager, target, queryRunner }
 }): Repository<Entity> {
 
     return {
-        instanceof: "Repository",
+        typeof: "Repository",
         manager: manager,
         queryRunner: queryRunner,
         target: target as any, // todo: fix any later

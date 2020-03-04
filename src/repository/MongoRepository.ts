@@ -44,7 +44,7 @@ export type MongoRepository<Entity extends ObjectLiteral> = Repository<Entity> &
     /**
      * Can be used to determine what object type is used.
      */
-    readonly instanceof: "MongoRepository"
+    readonly typeof: "MongoRepository"
 
     // -------------------------------------------------------------------------
     // Public Properties

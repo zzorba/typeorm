@@ -11,7 +11,6 @@ import {closeTestingConnections, createTestingConnections, setupSingleTestingCon
 import {Connection} from "../../../src/connection/Connection";
 import {getConnectionManager} from "../../../src/index";
 import {NoConnectionForRepositoryError} from "../../../src/error/NoConnectionForRepositoryError";
-import {EntityManager} from "../../../src/entity-manager/EntityManager";
 import {CannotGetEntityManagerNotConnectedError} from "../../../src/error/CannotGetEntityManagerNotConnectedError";
 import {ConnectionOptions} from "../../../src/connection/ConnectionOptions";
 import {PostgresConnectionOptions} from "../../../src/driver/postgres/PostgresConnectionOptions";
@@ -121,11 +120,6 @@ describe("Connection", () => {
 
         it("connection.isConnected should be true", () => connections.forEach(connection => {
             connection.isConnected.should.be.true;
-        }));
-
-        it("entity manager and reactive entity manager should be accessible", () => connections.forEach(connection => {
-            expect(connection.manager).to.be.instanceOf(EntityManager);
-            // expect(connection.reactiveEntityManager).to.be.instanceOf(ReactiveEntityManager);
         }));
 
         it("should not be able to connect again", () => connections.forEach(connection => {

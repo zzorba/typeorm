@@ -18,7 +18,7 @@ export type TreeRepository<Entity> = Repository<Entity> & {
     /**
      * Can be used to determine what object type is used.
      */
-    readonly instanceof: "TreeRepository"
+    readonly typeof: "TreeRepository"
 
     /**
      * Gets complete trees for all roots in the table.

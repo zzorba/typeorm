@@ -153,7 +153,7 @@ export class Connection {
      * Available only in mongodb connections.
      */
     get mongoManager(): MongoEntityManager {
-        if (!(this.manager instanceof MongoEntityManager))
+        if ((this.manager.typeof as any) !== "MongoEntityManager") // todo: will need to figure out solution to use instead of any
             throw new Error(`MongoEntityManager is only available for MongoDB databases.`);
 
         return this.manager as MongoEntityManager;
@@ -165,7 +165,7 @@ export class Connection {
      * Available only in connection with the sqljs driver.
      */
     get sqljsManager(): SqljsEntityManager {
-        if (!(this.manager instanceof SqljsEntityManager))
+        if ((this.manager.typeof as any) !== "SqljsEntityManager") // todo: will need to figure out solution to use instead of any
             throw new Error(`SqljsEntityManager is only available for Sqljs databases.`);
 
         return this.manager as SqljsEntityManager;
@@ -418,7 +418,7 @@ export class Connection {
      * Executes raw SQL query and returns raw database results.
      */
     async query(query: string, parameters?: any[], queryRunner?: QueryRunner): Promise<any> {
-        if (this instanceof MongoEntityManager)
+        if ((this.manager.typeof as any) === "MongoEntityManager") // todo: will need to figure out solution to use instead of any
             throw new Error(`Queries aren't supported by MongoDB.`);
 
         if (queryRunner && queryRunner.isReleased)
@@ -449,7 +449,7 @@ export class Connection {
      * Creates a new query builder that can be used to build a sql query.
      */
     createQueryBuilder<Entity>(entityOrRunner?: EntityTarget<Entity>|QueryRunner, alias?: string, queryRunner?: QueryRunner): SelectQueryBuilder<Entity> {
-        if (this instanceof MongoEntityManager)
+        if ((this.manager.typeof as any) === "MongoEntityManager") // todo: will need to figure out solution to use instead of any
             throw new Error(`Query Builder is not supported by MongoDB.`);
 
         if (alias) {
