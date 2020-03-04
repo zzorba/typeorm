@@ -61,12 +61,13 @@ export function createLiteralMongoEntityManager<Entity>({ connection }: {
     connection: Connection,
 }): MongoEntityManager {
 
+    const queryRunner: MongoQueryRunner = (connection.driver as MongoDriver).queryRunner!;
+
     /**
      * Overrides cursor's toArray and next methods to convert results to entity automatically.
      */
     function applyEntityTransformationToCursor<Entity>(metadata: EntityMetadata, cursor: Cursor<Entity> | AggregationCursor<Entity>) {
         const ParentCursor = PlatformTools.load("mongodb").Cursor;
-        const queryRunner = this.queryRunner;
         cursor.toArray = function (callback?: MongoCallback<Entity[]>) {
             if (callback) {
                 ParentCursor.prototype.toArray.call(this, (error: MongoError, results: Entity[]): void => {
@@ -224,9 +225,7 @@ export function createLiteralMongoEntityManager<Entity>({ connection }: {
     return {
         ...createLiteralEntityManager({ connection }),
         connection: connection,
-        get queryRunner(): MongoQueryRunner {
-            return (connection.driver as MongoDriver).queryRunner!;
-        },
+        queryRunner: queryRunner,
 
         // -------------------------------------------------------------------------
         // Overridden Methods
@@ -372,7 +371,7 @@ export function createLiteralMongoEntityManager<Entity>({ connection }: {
 
         createCursor<Entity, T = any>(entityClassOrName: EntityTarget<Entity>, query?: ObjectLiteral): Cursor<T> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.cursor(metadata.tableName, query);
+            return queryRunner.cursor(metadata.tableName, query);
         },
 
         createEntityCursor<Entity>(entityClassOrName: EntityTarget<Entity>, query?: ObjectLiteral): Cursor<Entity> {
@@ -384,179 +383,179 @@ export function createLiteralMongoEntityManager<Entity>({ connection }: {
 
         aggregate<Entity, R = any>(entityClassOrName: EntityTarget<Entity>, pipeline: ObjectLiteral[], options?: CollectionAggregationOptions): AggregationCursor<R> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.aggregate(metadata.tableName, pipeline, options);
+            return queryRunner.aggregate(metadata.tableName, pipeline, options);
         },
 
         aggregateEntity<Entity>(entityClassOrName: EntityTarget<Entity>, pipeline: ObjectLiteral[], options?: CollectionAggregationOptions): AggregationCursor<Entity> {
             const metadata = connection.getMetadata(entityClassOrName);
-            const cursor = this.queryRunner.aggregate(metadata.tableName, pipeline, options);
+            const cursor = queryRunner.aggregate(metadata.tableName, pipeline, options);
             applyEntityTransformationToCursor(metadata, cursor);
             return cursor;
         },
 
         bulkWrite<Entity>(entityClassOrName: EntityTarget<Entity>, operations: ObjectLiteral[], options?: CollectionBulkWriteOptions): Promise<BulkWriteOpResultObject> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.bulkWrite(metadata.tableName, operations, options);
+            return queryRunner.bulkWrite(metadata.tableName, operations, options);
         },
 
         count<Entity>(entityClassOrName: EntityTarget<Entity>, query?: ObjectLiteral, options?: FindExtraOptions, mongoOptions?: MongoCountPreferences): Promise<number> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.count(metadata.tableName, query, mongoOptions);
+            return queryRunner.count(metadata.tableName, query, mongoOptions);
         },
 
         createCollectionIndex<Entity>(entityClassOrName: EntityTarget<Entity>, fieldOrSpec: string | any, options?: MongodbIndexOptions): Promise<string> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.createCollectionIndex(metadata.tableName, fieldOrSpec, options);
+            return queryRunner.createCollectionIndex(metadata.tableName, fieldOrSpec, options);
         },
 
         createCollectionIndexes<Entity>(entityClassOrName: EntityTarget<Entity>, indexSpecs: ObjectLiteral[]): Promise<void> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.createCollectionIndexes(metadata.tableName, indexSpecs);
+            return queryRunner.createCollectionIndexes(metadata.tableName, indexSpecs);
         },
 
         deleteMany<Entity>(entityClassOrName: EntityTarget<Entity>, query: ObjectLiteral, options?: CollectionOptions): Promise<DeleteWriteOpResultObject> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.deleteMany(metadata.tableName, query, options);
+            return queryRunner.deleteMany(metadata.tableName, query, options);
         },
 
         deleteOne<Entity>(entityClassOrName: EntityTarget<Entity>, query: ObjectLiteral, options?: CollectionOptions): Promise<DeleteWriteOpResultObject> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.deleteOne(metadata.tableName, query, options);
+            return queryRunner.deleteOne(metadata.tableName, query, options);
         },
 
         distinct<Entity>(entityClassOrName: EntityTarget<Entity>, key: string, query: ObjectLiteral, options?: { readPreference?: ReadPreference | string }): Promise<any> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.distinct(metadata.tableName, key, query, options);
+            return queryRunner.distinct(metadata.tableName, key, query, options);
         },
 
         dropCollectionIndex<Entity>(entityClassOrName: EntityTarget<Entity>, indexName: string, options?: CollectionOptions): Promise<any> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.dropCollectionIndex(metadata.tableName, indexName, options);
+            return queryRunner.dropCollectionIndex(metadata.tableName, indexName, options);
         },
 
         dropCollectionIndexes<Entity>(entityClassOrName: EntityTarget<Entity>): Promise<any> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.dropCollectionIndexes(metadata.tableName);
+            return queryRunner.dropCollectionIndexes(metadata.tableName);
         },
 
         findOneAndDelete<Entity>(entityClassOrName: EntityTarget<Entity>, query: ObjectLiteral, options?: { projection?: Object, sort?: Object, maxTimeMS?: number }): Promise<FindAndModifyWriteOpResultObject> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.findOneAndDelete(metadata.tableName, query, options);
+            return queryRunner.findOneAndDelete(metadata.tableName, query, options);
         },
 
         findOneAndReplace<Entity>(entityClassOrName: EntityTarget<Entity>, query: ObjectLiteral, replacement: Object, options?: FindOneAndReplaceOption): Promise<FindAndModifyWriteOpResultObject> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.findOneAndReplace(metadata.tableName, query, replacement, options);
+            return queryRunner.findOneAndReplace(metadata.tableName, query, replacement, options);
         },
 
         findOneAndUpdate<Entity>(entityClassOrName: EntityTarget<Entity>, query: ObjectLiteral, update: Object, options?: FindOneAndReplaceOption): Promise<FindAndModifyWriteOpResultObject> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.findOneAndUpdate(metadata.tableName, query, update, options);
+            return queryRunner.findOneAndUpdate(metadata.tableName, query, update, options);
         },
 
         geoHaystackSearch<Entity>(entityClassOrName: EntityTarget<Entity>, x: number, y: number, options?: GeoHaystackSearchOptions): Promise<any> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.geoHaystackSearch(metadata.tableName, x, y, options);
+            return queryRunner.geoHaystackSearch(metadata.tableName, x, y, options);
         },
 
         geoNear<Entity>(entityClassOrName: EntityTarget<Entity>, x: number, y: number, options?: GeoNearOptions): Promise<any> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.geoNear(metadata.tableName, x, y, options);
+            return queryRunner.geoNear(metadata.tableName, x, y, options);
         },
 
         group<Entity>(entityClassOrName: EntityTarget<Entity>, keys: Object | Array<any> | Function | Code, condition: Object, initial: Object, reduce: Function | Code, finalize: Function | Code, command: boolean, options?: { readPreference?: ReadPreference | string }): Promise<any> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.group(metadata.tableName, keys, condition, initial, reduce, finalize, command, options);
+            return queryRunner.group(metadata.tableName, keys, condition, initial, reduce, finalize, command, options);
         },
 
         collectionIndexes<Entity>(entityClassOrName: EntityTarget<Entity>): Promise<any> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.collectionIndexes(metadata.tableName);
+            return queryRunner.collectionIndexes(metadata.tableName);
         },
 
         collectionIndexExists<Entity>(entityClassOrName: EntityTarget<Entity>, indexes: string | string[]): Promise<boolean> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.collectionIndexExists(metadata.tableName, indexes);
+            return queryRunner.collectionIndexExists(metadata.tableName, indexes);
         },
 
         collectionIndexInformation<Entity>(entityClassOrName: EntityTarget<Entity>, options?: { full: boolean }): Promise<any> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.collectionIndexInformation(metadata.tableName, options);
+            return queryRunner.collectionIndexInformation(metadata.tableName, options);
         },
 
         initializeOrderedBulkOp<Entity>(entityClassOrName: EntityTarget<Entity>, options?: CollectionOptions): OrderedBulkOperation {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.initializeOrderedBulkOp(metadata.tableName, options);
+            return queryRunner.initializeOrderedBulkOp(metadata.tableName, options);
         },
 
         initializeUnorderedBulkOp<Entity>(entityClassOrName: EntityTarget<Entity>, options?: CollectionOptions): UnorderedBulkOperation {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.initializeUnorderedBulkOp(metadata.tableName, options);
+            return queryRunner.initializeUnorderedBulkOp(metadata.tableName, options);
         },
 
         insertMany<Entity>(entityClassOrName: EntityTarget<Entity>, docs: ObjectLiteral[], options?: CollectionInsertManyOptions): Promise<InsertWriteOpResult> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.insertMany(metadata.tableName, docs, options);
+            return queryRunner.insertMany(metadata.tableName, docs, options);
         },
 
         insertOne<Entity>(entityClassOrName: EntityTarget<Entity>, doc: ObjectLiteral, options?: CollectionInsertOneOptions): Promise<InsertOneWriteOpResult> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.insertOne(metadata.tableName, doc, options);
+            return queryRunner.insertOne(metadata.tableName, doc, options);
         },
 
         isCapped<Entity>(entityClassOrName: EntityTarget<Entity>): Promise<any> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.isCapped(metadata.tableName);
+            return queryRunner.isCapped(metadata.tableName);
         },
 
         listCollectionIndexes<Entity>(entityClassOrName: EntityTarget<Entity>, options?: { batchSize?: number, readPreference?: ReadPreference | string }): CommandCursor {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.listCollectionIndexes(metadata.tableName, options);
+            return queryRunner.listCollectionIndexes(metadata.tableName, options);
         },
 
         mapReduce<Entity>(entityClassOrName: EntityTarget<Entity>, map: Function | string, reduce: Function | string, options?: MapReduceOptions): Promise<any> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.mapReduce(metadata.tableName, map, reduce, options);
+            return queryRunner.mapReduce(metadata.tableName, map, reduce, options);
         },
 
         parallelCollectionScan<Entity>(entityClassOrName: EntityTarget<Entity>, options?: ParallelCollectionScanOptions): Promise<Cursor<Entity>[]> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.parallelCollectionScan(metadata.tableName, options);
+            return queryRunner.parallelCollectionScan(metadata.tableName, options);
         },
 
         reIndex<Entity>(entityClassOrName: EntityTarget<Entity>): Promise<any> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.reIndex(metadata.tableName);
+            return queryRunner.reIndex(metadata.tableName);
         },
 
         rename<Entity>(entityClassOrName: EntityTarget<Entity>, newName: string, options?: { dropTarget?: boolean }): Promise<Collection<any>> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.rename(metadata.tableName, newName, options);
+            return queryRunner.rename(metadata.tableName, newName, options);
         },
 
         replaceOne<Entity>(entityClassOrName: EntityTarget<Entity>, query: ObjectLiteral, doc: ObjectLiteral, options?: ReplaceOneOptions): Promise<UpdateWriteOpResult> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.replaceOne(metadata.tableName, query, doc, options);
+            return queryRunner.replaceOne(metadata.tableName, query, doc, options);
         },
 
         stats<Entity>(entityClassOrName: EntityTarget<Entity>, options?: { scale: number }): Promise<CollStats> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.stats(metadata.tableName, options);
+            return queryRunner.stats(metadata.tableName, options);
         },
 
         watch<Entity>(entityClassOrName: EntityTarget<Entity>, pipeline?: Object[], options?: ChangeStreamOptions): ChangeStream {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.watch(metadata.tableName, pipeline, options);
+            return queryRunner.watch(metadata.tableName, pipeline, options);
         },
 
         updateMany<Entity>(entityClassOrName: EntityTarget<Entity>, query: ObjectLiteral, update: ObjectLiteral, options?: { upsert?: boolean, w?: any, wtimeout?: number, j?: boolean }): Promise<UpdateWriteOpResult> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.updateMany(metadata.tableName, query, update, options);
+            return queryRunner.updateMany(metadata.tableName, query, update, options);
         },
 
         updateOne<Entity>(entityClassOrName: EntityTarget<Entity>, query: ObjectLiteral, update: ObjectLiteral, options?: ReplaceOneOptions): Promise<UpdateWriteOpResult> {
             const metadata = connection.getMetadata(entityClassOrName);
-            return this.queryRunner.updateOne(metadata.tableName, query, update, options);
+            return queryRunner.updateOne(metadata.tableName, query, update, options);
         }
 
     };
