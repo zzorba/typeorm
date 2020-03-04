@@ -230,6 +230,7 @@ export function createLiteralMongoEntityManager<Entity>({ connection }: {
         get queryRunner() {
             return getQueryRunner();
         },
+        typeof: "MongoEntityManager" as any, // todo: fix as any
 
         // -------------------------------------------------------------------------
         // Overridden Methods

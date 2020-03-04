@@ -16,6 +16,7 @@ export function createLiteralSqljsEntityManager<Entity>({ connection, queryRunne
 
     return {
         ...createLiteralEntityManager({ connection, queryRunner }),
+        typeof: "SqljsEntityManager" as any, // todo: fix as any
         async loadDatabase(fileNameOrLocalStorageOrData: string | Uint8Array): Promise<void> {
             await driver.load(fileNameOrLocalStorageOrData);
         },
