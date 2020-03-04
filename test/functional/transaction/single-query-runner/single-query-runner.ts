@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import { MongoDriver } from "../../../../src/driver/mongodb/MongoDriver";
 import {closeTestingConnections, createTestingConnections, reloadTestingDatabases} from "../../../utils/test-utils";
 import {Connection} from "../../../../src";
 import {Post} from "./entity/Post";
@@ -15,9 +14,6 @@ describe("transaction > single query runner", () => {
     after(() => closeTestingConnections(connections));
 
     it("should execute all operations in the method in a transaction", () => Promise.all(connections.map(async connection => {
-        if (connection.driver instanceof MongoDriver) // skipping Mongo since transactions aren't supported
-            return;
-
         return connection.transaction(async transactionalEntityManager => {
             const originalQueryRunner = transactionalEntityManager.queryRunner;
 
@@ -32,9 +28,6 @@ describe("transaction > single query runner", () => {
     })));
 
     it("should execute all operations in the method in a transaction (#804)", () => Promise.all(connections.map(async connection => {
-        if (connection.driver instanceof MongoDriver) // skipping Mongo since transactions aren't supported
-            return;
-
         const entityManager = connection.createQueryRunner().manager;
         entityManager.should.not.be.equal(connection.manager);
         entityManager.queryRunner!.should.be.equal(entityManager.queryRunner);

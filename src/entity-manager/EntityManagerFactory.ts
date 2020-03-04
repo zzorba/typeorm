@@ -20,7 +20,7 @@ export class EntityManagerFactory {
             return createLiteralMongoEntityManager({ connection });
 
         if (connection.driver instanceof SqljsDriver)
-            return createLiteralSqljsEntityManager({ connection });
+            return createLiteralSqljsEntityManager({ connection, queryRunner });
 
         return createLiteralEntityManager({ connection, queryRunner });
     }
