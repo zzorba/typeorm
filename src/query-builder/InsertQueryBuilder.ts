@@ -59,14 +59,12 @@ export class InsertQueryBuilder<Entity> extends QueryBuilder<Entity> {
             // console.timeEnd(".value sets");
 
             // call before insertion methods in listeners and subscribers
-            if (this.expressionMap.callObservers) {
-                if (this.expressionMap.callListeners === true && this.expressionMap.mainAlias!.hasMetadata) {
-                    const broadcastResult = new BroadcasterResult();
-                    valueSets.forEach(valueSet => {
-                        queryRunner.broadcaster.broadcastBeforeInsertEvent(broadcastResult, this.expressionMap.mainAlias!.metadata, valueSet);
-                    });
-                    if (broadcastResult.promises.length > 0) await Promise.all(broadcastResult.promises);
-                }
+            if (this.expressionMap.callListeners === true && this.expressionMap.mainAlias!.hasMetadata) {
+                const broadcastResult = new BroadcasterResult();
+                valueSets.forEach(valueSet => {
+                    queryRunner.broadcaster.broadcastBeforeInsertEvent(broadcastResult, this.expressionMap.mainAlias!.metadata, valueSet);
+                });
+                if (broadcastResult.promises.length > 0) await Promise.all(broadcastResult.promises);
             }
 
             // if update entity mode is enabled we may need extra columns for the returning statement
