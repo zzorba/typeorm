@@ -35,12 +35,12 @@ import {OffsetWithoutLimitNotSupportedError} from "../error/OffsetWithoutLimitNo
 import {BroadcasterResult} from "../subscriber/BroadcasterResult";
 import {SelectQueryBuilderOption} from "./SelectQueryBuilderOption";
 import {
-    FindExtraOptions,
     FindOptions,
     FindOptionsOrder,
     FindOptionsRelation,
     FindOptionsSelect,
-    FindOptionsWhere
+    FindOptionsWhere,
+    QueryFindOptions
 } from "../find-options/FindOptions";
 import {RelationMetadata} from "../metadata/RelationMetadata";
 import {FindCriteriaNotFoundError} from "../error/FindCriteriaNotFoundError";
@@ -51,16 +51,6 @@ import {DriverUtils} from "../driver/DriverUtils";
 import {AuroraDataApiDriver} from "../driver/aurora-data-api/AuroraDataApiDriver";
 import {ApplyValueTransformers} from "../util/ApplyValueTransformers";
 import {Connection, EntityTarget} from "..";
-
-type QueryFindOptions<E> = // TODO: Think of better name
-    Pick<FindOptions<E>, "select">
-    & Pick<FindOptions<E>, "where">
-    & Pick<FindOptions<E>, "order">
-    & Pick<FindOptions<E>, "relations">
-    & Pick<FindOptions<E>, "skip">
-    & Pick<FindOptions<E>, "take">
-    & Pick<FindExtraOptions, "loadRelationIds">
-    & Pick<FindExtraOptions, "pagination">;
 
 /**
  * Allows to build complex sql queries in a fashion way and execute those queries.
@@ -806,14 +796,9 @@ export class SelectQueryBuilder<Entity> extends QueryBuilder<Entity> implements 
      * Adds new AND WHERE condition in the query builder.
      * Additionally you can add parameters used in where expression.
      */
-    andWhere(where: string|Brackets|((qb: this) => string)|FindOptionsWhere<Entity>, parameters?: ObjectLiteral): this {
+    andWhere(where: string|Brackets|((qb: this) => string), parameters?: ObjectLiteral): this {
 
-        if (where && typeof where === "object" && !(where instanceof Brackets)) {
-            this.findOptions.where = where; // todo: implement "AND"
-
-        } else {
-            this.expressionMap.wheres.push({ type: "and", condition: this.computeWhereParameter(where) });
-        }
+        this.expressionMap.wheres.push({ type: "and", condition: this.computeWhereParameter(where) });
 
         if (parameters)
             this.setParameters(parameters);
@@ -825,14 +810,9 @@ export class SelectQueryBuilder<Entity> extends QueryBuilder<Entity> implements 
      * Adds new OR WHERE condition in the query builder.
      * Additionally you can add parameters used in where expression.
      */
-    orWhere(where: Brackets|string|((qb: this) => string)|FindOptionsWhere<Entity>, parameters?: ObjectLiteral): this {
+    orWhere(where: Brackets|string|((qb: this) => string), parameters?: ObjectLiteral): this {
 
-        if (where && typeof where === "object" && !(where instanceof Brackets)) {
-            this.findOptions.where = where; // todo: implement "OR"
-
-        } else {
-            this.expressionMap.wheres.push({ type: "or", condition: this.computeWhereParameter(where) });
-        }
+        this.expressionMap.wheres.push({ type: "or", condition: this.computeWhereParameter(where) });
 
         if (parameters) this.setParameters(parameters);
         return this;

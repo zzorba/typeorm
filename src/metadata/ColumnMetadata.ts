@@ -355,7 +355,7 @@ export class ColumnMetadata {
             this.default = options.args.options.default;
         if (options.args.options.onUpdate)
             this.onUpdate = options.args.options.onUpdate;
-        if (options.args.options.scale !== null && options.args.options.scale !== undefined)
+        if (options.args.options.scale !== undefined)
             this.scale = options.args.options.scale;
         if (options.args.options.zerofill) {
             this.zerofill = options.args.options.zerofill;
@@ -363,7 +363,7 @@ export class ColumnMetadata {
         }
         if (options.args.options.unsigned)
             this.unsigned = options.args.options.unsigned;
-        if (options.args.options.precision !== null && options.args.options.precision !== undefined)
+        if (options.args.options.precision !== undefined)
             this.precision = options.args.options.precision;
         if (options.args.options.enum) {
             if (options.args.options.enum instanceof Object && !Array.isArray(options.args.options.enum)) {
@@ -407,7 +407,7 @@ export class ColumnMetadata {
                 this.type = options.connection.driver.mappedDataTypes.createDate;
             if (!this.default)
                 this.default = () => options.connection.driver.mappedDataTypes.createDateDefault;
-            if ((this.precision === null || this.precision === undefined) && options.connection.driver.mappedDataTypes.createDatePrecision)
+            if (this.precision === undefined && options.connection.driver.mappedDataTypes.createDatePrecision)
                 this.precision = options.connection.driver.mappedDataTypes.createDatePrecision;
         }
         if (this.isUpdateDate) {
@@ -415,7 +415,7 @@ export class ColumnMetadata {
                 this.type = options.connection.driver.mappedDataTypes.updateDate;
             if (!this.default)
                 this.default = () => options.connection.driver.mappedDataTypes.updateDateDefault;
-            if ((this.precision === null || this.precision === undefined) && options.connection.driver.mappedDataTypes.updateDatePrecision)
+            if (this.precision === undefined && options.connection.driver.mappedDataTypes.updateDatePrecision)
                 this.precision = options.connection.driver.mappedDataTypes.updateDatePrecision;
         }
         if (this.isVersion)
@@ -528,22 +528,10 @@ export class ColumnMetadata {
             return Object.keys(map).length > 0 ? map : undefined;
 
         } else { // no embeds - no problems. Simply return column property name and its value of the entity
-            /*if (this.relationMetadata && entity[this.propertyName] && entity[this.propertyName] instanceof Object) { // commented since functionality is suspicious no failing test was found
-                const map = this.relationMetadata.joinColumns.reduce((map, joinColumn) => {
-                    const value = joinColumn.referencedColumn!.getEntityValueMap(entity[this.propertyName]);
-                    if (value === undefined) return map;
-                    return OrmUtils.mergeDeep(map, value);
-                }, {});
-                if (Object.keys(map).length > 0)
-                    return { [this.propertyName]: map };
-
-                return undefined;
-            } else {*/
             if (entity[this.propertyName] !== undefined && (returnNulls === false || entity[this.propertyName] !== null))
                 return { [this.propertyName]: entity[this.propertyName] };
 
             return undefined;
-            // }
         }
     }
 
