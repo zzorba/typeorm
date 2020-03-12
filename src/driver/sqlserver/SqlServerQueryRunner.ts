@@ -864,6 +864,18 @@ export class SqlServerQueryRunner extends BaseQueryRunner implements QueryRunner
                     unique.name = newUniqueName;
                 });
 
+                // rename default constraints
+                if (oldColumn.default !== null && oldColumn.default !== undefined) {
+                    const oldDefaultName = this.connection.namingStrategy.defaultConstraintName(table.name, oldColumn.name);
+                    const newDefaultName = this.connection.namingStrategy.defaultConstraintName(table.name, newColumn.name);
+
+                    upQueries.push(new Query(`ALTER TABLE ${this.escapePath(table)} DROP CONSTRAINT "${oldDefaultName}"`));
+                    downQueries.push(new Query(`ALTER TABLE ${this.escapePath(table)} ADD CONSTRAINT "${oldDefaultName}" DEFAULT ${oldColumn.default} FOR "${newColumn.name}"`));
+
+                    upQueries.push(new Query(`ALTER TABLE ${this.escapePath(table)} ADD CONSTRAINT "${newDefaultName}" DEFAULT ${oldColumn.default} FOR "${newColumn.name}"`));
+                    downQueries.push(new Query(`ALTER TABLE ${this.escapePath(table)} DROP CONSTRAINT "${newDefaultName}"`));
+                }
+
                 // change currently used database back to default db.
                 if (dbName && dbName !== currentDB) {
                     upQueries.push(new Query(`USE "${currentDB}"`));
@@ -876,7 +888,7 @@ export class SqlServerQueryRunner extends BaseQueryRunner implements QueryRunner
                 oldColumn.name = newColumn.name;
             }
 
-            if (this.isColumnChanged(oldColumn, newColumn)) {
+            if (this.isColumnChanged(oldColumn, newColumn, false)) {
                 upQueries.push(new Query(`ALTER TABLE ${this.escapePath(table)} ALTER COLUMN ${this.buildCreateColumnSql(table, newColumn, true, false)}`));
                 downQueries.push(new Query(`ALTER TABLE ${this.escapePath(table)} ALTER COLUMN ${this.buildCreateColumnSql(table, oldColumn, true, false)}`));
             }
@@ -941,15 +953,18 @@ export class SqlServerQueryRunner extends BaseQueryRunner implements QueryRunner
             }
 
             if (newColumn.default !== oldColumn.default) {
+
+                // (note) if there is a previous default, we need to drop its constraint first
+                if (oldColumn.default !== null && oldColumn.default !== undefined) {
+                    const defaultName = this.connection.namingStrategy.defaultConstraintName(table.name, oldColumn.name);
+                    upQueries.push(new Query(`ALTER TABLE ${this.escapePath(table)} DROP CONSTRAINT "${defaultName}"`));
+                    downQueries.push(new Query(`ALTER TABLE ${this.escapePath(table)} ADD CONSTRAINT "${defaultName}" DEFAULT ${oldColumn.default} FOR "${oldColumn.name}"`));
+                }
+
                 if (newColumn.default !== null && newColumn.default !== undefined) {
                     const defaultName = this.connection.namingStrategy.defaultConstraintName(table.name, newColumn.name);
                     upQueries.push(new Query(`ALTER TABLE ${this.escapePath(table)} ADD CONSTRAINT "${defaultName}" DEFAULT ${newColumn.default} FOR "${newColumn.name}"`));
                     downQueries.push(new Query(`ALTER TABLE ${this.escapePath(table)} DROP CONSTRAINT "${defaultName}"`));
-
-                } else if (oldColumn.default !== null && oldColumn.default !== undefined) {
-                    const defaultName = this.connection.namingStrategy.defaultConstraintName(table.name, oldColumn.name);
-                    upQueries.push(new Query(`ALTER TABLE ${this.escapePath(table)} DROP CONSTRAINT "${defaultName}"`));
-                    downQueries.push(new Query(`ALTER TABLE ${this.escapePath(table)} ADD CONSTRAINT "${defaultName}" DEFAULT ${oldColumn.default} FOR "${oldColumn.name}"`));
                 }
             }
 
@@ -1371,6 +1386,11 @@ export class SqlServerQueryRunner extends BaseQueryRunner implements QueryRunner
                 return Promise.all(dropFkQueries.map(result => result["query"]).map(dropQuery => this.query(dropQuery)));
             }));
             await Promise.all(allTablesResults.map(tablesResult => {
+                if (tablesResult["TABLE_NAME"].startsWith("#")) {
+                    // don't try to drop temporary tables
+                    return;
+                }
+
                 const dropTableSql = `DROP TABLE "${tablesResult["TABLE_CATALOG"]}"."${tablesResult["TABLE_SCHEMA"]}"."${tablesResult["TABLE_NAME"]}"`;
                 return this.query(dropTableSql);
             }));
@@ -1690,7 +1710,8 @@ export class SqlServerQueryRunner extends BaseQueryRunner implements QueryRunner
 
                     // todo: unable to get default charset
                     // tableColumn.charset = dbColumn["CHARACTER_SET_NAME"];
-                    tableColumn.collation = dbColumn["COLLATION_NAME"] === defaultCollation["COLLATION_NAME"] ? undefined : dbColumn["COLLATION_NAME"];
+                    if (dbColumn["COLLATION_NAME"])
+                        tableColumn.collation = dbColumn["COLLATION_NAME"] === defaultCollation["COLLATION_NAME"] ? undefined : dbColumn["COLLATION_NAME"];
 
                     if (tableColumn.type === "datetime2" || tableColumn.type === "time" || tableColumn.type === "datetimeoffset") {
                         tableColumn.precision = !this.isDefaultColumnPrecision(table, tableColumn, dbColumn["DATETIME_PRECISION"]) ? dbColumn["DATETIME_PRECISION"] : undefined;
@@ -2056,7 +2077,7 @@ export class SqlServerQueryRunner extends BaseQueryRunner implements QueryRunner
      *  ((1)) - for number
      *  (newsequentialId()) - for function
      */
-    protected removeParenthesisFromDefault(defaultValue: any): any {
+    protected removeParenthesisFromDefault(defaultValue: string): any {
         if (defaultValue.substr(0, 1) !== "(")
             return defaultValue;
         const normalizedDefault = defaultValue.substr(1, defaultValue.lastIndexOf(")") - 1);

@@ -23,8 +23,8 @@ export class RelationIdLoader {
      */
     load(relation: RelationMetadata, entityOrEntities: ObjectLiteral|ObjectLiteral[], relatedEntityOrRelatedEntities?: ObjectLiteral|ObjectLiteral[]): Promise<any[]> {
 
-        const entities = entityOrEntities instanceof Array ? entityOrEntities : [entityOrEntities];
-        const relatedEntities = relatedEntityOrRelatedEntities instanceof Array ? relatedEntityOrRelatedEntities : (relatedEntityOrRelatedEntities ? [relatedEntityOrRelatedEntities] : undefined);
+        const entities = Array.isArray(entityOrEntities) ? entityOrEntities : [entityOrEntities];
+        const relatedEntities = Array.isArray(relatedEntityOrRelatedEntities) ? relatedEntityOrRelatedEntities : (relatedEntityOrRelatedEntities ? [relatedEntityOrRelatedEntities] : undefined);
 
         // load relation ids depend of relation type
         if (relation.isManyToMany) {
@@ -53,7 +53,7 @@ export class RelationIdLoader {
         // console.log("relation:", relation.propertyName);
         // console.log("entitiesOrEntities", entitiesOrEntities);
         const isMany = relation.isManyToMany || relation.isOneToMany;
-        const entities: E1[] = entitiesOrEntities instanceof Array ? entitiesOrEntities : [entitiesOrEntities];
+        const entities: E1[] = Array.isArray(entitiesOrEntities) ? entitiesOrEntities : [entitiesOrEntities];
 
         if (!relatedEntityOrEntities) {
             relatedEntityOrEntities = await this.connection.relationLoader.load(relation, entitiesOrEntities, undefined, queryBuilder);
@@ -66,7 +66,7 @@ export class RelationIdLoader {
         // console.log("relatedEntityOrEntities", relatedEntityOrEntities);
         // console.log("relationIds", relationIds);
 
-        const relatedEntities: E2[] = relatedEntityOrEntities instanceof Array ? relatedEntityOrEntities : [relatedEntityOrEntities!];
+        const relatedEntities: E2[] = Array.isArray(relatedEntityOrEntities) ? relatedEntityOrEntities : [relatedEntityOrEntities!];
 
         let columns: ColumnMetadata[] = [], inverseColumns: ColumnMetadata[] = [];
         if (relation.isManyToManyOwner) {

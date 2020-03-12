@@ -32,8 +32,8 @@ export function createLiteralTreeRepository<Entity>({ manager, target, queryRunn
         const childProperty = metadata.treeChildrenRelation!.propertyName;
         const parentEntityId = metadata.primaryColumns[0].getEntityValue(entity);
         const childRelationMaps = relationMaps.filter(relationMap => relationMap.parentId === parentEntityId);
-        const childIds = childRelationMaps.map(relationMap => relationMap.id);
-        entity[childProperty] = entities.filter(entity => childIds.indexOf(entity.id) !== -1);
+        const childIds = new Set(childRelationMaps.map(relationMap => relationMap.id));
+        entity[childProperty] = entities.filter(entity => childIds.has(entity.id));
         entity[childProperty].forEach((childEntity: any) => {
             buildChildrenEntityTree(metadata, childEntity, entities, relationMaps);
         });

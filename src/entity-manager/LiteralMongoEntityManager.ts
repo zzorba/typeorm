@@ -326,7 +326,7 @@ export function createLiteralMongoEntityManager<Entity>({ connection }: {
         async insert<Entity>(target: EntityTarget<Entity>, entity: QueryDeepPartialEntity<Entity> | QueryDeepPartialEntity<Entity>[]): Promise<InsertResult> {
             // todo: convert entity to its database name
             const result = new InsertResult();
-            if (entity instanceof Array) {
+            if (Array.isArray(entity)) {
                 result.raw = await this.insertMany(target, entity);
                 Object.keys(result.raw.insertedIds).forEach((key: any) => {
                     let insertedId = result.raw.insertedIds[key];
@@ -344,7 +344,7 @@ export function createLiteralMongoEntityManager<Entity>({ connection }: {
         },
 
         async update<Entity>(target: EntityTarget<Entity>, criteria: string|string[]|number|number[]|Date|Date[]|ObjectID|ObjectID[]|FindOptionsWhere<Entity>, partialEntity: QueryDeepPartialEntity<Entity>): Promise<UpdateResult> {
-            if (criteria instanceof Array) {
+            if (Array.isArray(criteria)) {
                 await Promise.all((criteria as any[]).map(criteriaItem => {
                     return this.update(target, criteriaItem, partialEntity);
                 }));
@@ -358,7 +358,7 @@ export function createLiteralMongoEntityManager<Entity>({ connection }: {
         },
 
         async delete<Entity>(target: EntityTarget<Entity>, criteria: string|string[]|number|number[]|Date|Date[]|ObjectID|ObjectID[]|FindOptionsWhere<Entity>): Promise<DeleteResult> {
-            if (criteria instanceof Array) {
+            if (Array.isArray(criteria)) {
                 await Promise.all((criteria as any[]).map(criteriaItem => {
                     return this.delete(target, criteriaItem);
                 }));

@@ -7,7 +7,8 @@ import {EntitySchema} from "../../src/entity-schema/EntitySchema";
 import {createConnections} from "../../src/index";
 import {NamingStrategyInterface} from "../../src/naming-strategy/NamingStrategyInterface";
 import {PromiseUtils} from "../../src/util/PromiseUtils";
-import { EntityFactoryInterface } from "../../src/entity-factory/EntityFactoryInterface";
+import {EntityFactoryInterface} from "../../src/entity-factory/EntityFactoryInterface";
+import {QueryResultCache} from "../../src/cache/QueryResultCache";
 
 /**
  * Interface in which data is stored in ormconfig.json of the project.
@@ -107,7 +108,12 @@ export interface TestingOptions {
          * - "mongodb" means cached values will be stored in mongodb database. You must provide mongodb connection options.
          * - "redis" means cached values will be stored inside redis. You must provide redis connection options.
          */
-        type?: "database" | "redis";
+        readonly type?: "database" | "redis" | "ioredis" | "ioredis/cluster"; // todo: add mongodb and other cache providers as well in the future
+
+        /**
+         * Factory function for custom cache providers that implement QueryResultCache.
+         */
+        readonly provider?: (connection: Connection) => QueryResultCache;
 
         /**
          * Used to provide mongodb / redis connection options.
