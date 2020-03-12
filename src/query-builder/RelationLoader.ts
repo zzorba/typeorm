@@ -98,7 +98,7 @@ export class RelationLoader {
      * WHERE post.[joinColumn.name] = entity[joinColumn.referencedColumn]
      */
     loadOneToManyOrOneToOneNotOwner(relation: RelationMetadata, entityOrEntities: ObjectLiteral|ObjectLiteral[], queryRunner?: QueryRunner, queryBuilder?: SelectQueryBuilder<any>): Promise<any> {
-        const entities = Array.isArray(entityOrEntities)? entityOrEntities : [entityOrEntities];
+        const entities = Array.isArray(entityOrEntities) ? entityOrEntities : [entityOrEntities];
         const columns = relation.inverseRelation!.joinColumns;
 
         const qb = queryBuilder ? queryBuilder : this.connection
@@ -144,7 +144,7 @@ export class RelationLoader {
      * AND post_categories.categoryId = category.id
      */
     loadManyToManyOwner(relation: RelationMetadata, entityOrEntities: ObjectLiteral|ObjectLiteral[], queryRunner?: QueryRunner, queryBuilder?: SelectQueryBuilder<any>): Promise<any> {
-        const entities = Array.isArray(entityOrEntities)? entityOrEntities : [entityOrEntities];
+        const entities = Array.isArray(entityOrEntities) ? entityOrEntities : [entityOrEntities];
 
         const qb = queryBuilder ? queryBuilder : this.connection
             .createQueryBuilder(queryRunner)
