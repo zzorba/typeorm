@@ -17,6 +17,7 @@ import { RemoveOptions } from "../repository/RemoveOptions";
 import { Repository } from "../repository/Repository";
 import { SaveOptions } from "../repository/SaveOptions";
 import { TreeRepository } from "../repository/TreeRepository";
+import { EntitySchema } from '..';
 
 /**
  * Entity manager supposed to work with any entity, automatically find its repository and call its methods,
@@ -161,6 +162,66 @@ export type EntityManager = {
     remove<Entity>(targetOrEntity: EntityTarget<Entity>, entity: Entity[], options?: RemoveOptions): Promise<Entity[]>;
 
     /**
+     * Records the delete date of all given entities.
+     */
+    softRemove<Entity>(entities: Entity[], options?: SaveOptions): Promise<Entity[]>;
+
+    /**
+     * Records the delete date of a given entity.
+     */
+    softRemove<Entity>(entity: Entity, options?: SaveOptions): Promise<Entity>;
+
+    /**
+     * Records the delete date of all given entities.
+     */
+    softRemove<Entity, T extends DeepPartial<Entity>>(targetOrEntity: ObjectType<Entity>|EntitySchema<Entity>, entities: T[], options?: SaveOptions): Promise<T[]>;
+
+    /**
+     * Records the delete date of a given entity.
+     */
+    softRemove<Entity, T extends DeepPartial<Entity>>(targetOrEntity: ObjectType<Entity>|EntitySchema<Entity>, entity: T, options?: SaveOptions): Promise<T>;
+
+    /**
+     * Records the delete date of all given entities.
+     */
+    softRemove<T>(targetOrEntity: string, entities: T[], options?: SaveOptions): Promise<T[]>;
+
+    /**
+     * Records the delete date of a given entity.
+     */
+    softRemove<T>(targetOrEntity: string, entity: T, options?: SaveOptions): Promise<T>;
+
+    /**
+     * Recovers all given entities.
+     */
+    recover<Entity>(entities: Entity[], options?: SaveOptions): Promise<Entity[]>;
+
+    /**
+     * Recovers a given entity.
+     */
+    recover<Entity>(entity: Entity, options?: SaveOptions): Promise<Entity>;
+
+    /**
+     * Recovers all given entities.
+     */
+    recover<Entity, T extends DeepPartial<Entity>>(targetOrEntity: ObjectType<Entity>|EntitySchema<Entity>, entities: T[], options?: SaveOptions): Promise<T[]>;
+
+    /**
+     * Recovers a given entity.
+     */
+    recover<Entity, T extends DeepPartial<Entity>>(targetOrEntity: ObjectType<Entity>|EntitySchema<Entity>, entity: T, options?: SaveOptions): Promise<T>;
+
+    /**
+     * Recovers all given entities.
+     */
+    recover<T>(targetOrEntity: string, entities: T[], options?: SaveOptions): Promise<T[]>;
+
+    /**
+     * Recovers a given entity.
+     */
+    recover<T>(targetOrEntity: string, entity: T, options?: SaveOptions): Promise<T>;
+
+    /**
      * Inserts a given entity into the database.
      * Unlike save method executes a primitive operation without cascades, relations and other operations included.
      * Executes fast and efficient INSERT query.
@@ -186,6 +247,24 @@ export type EntityManager = {
      * Condition(s) cannot be empty.
      */
     delete<Entity>(targetOrEntity: EntityTarget<Entity>, criteria: string|string[]|number|number[]|Date|Date[]|ObjectID|ObjectID[]|FindOptionsWhere<Entity>): Promise<DeleteResult>;
+
+    /**
+     * Records the delete date of entities by a given condition(s).
+     * Unlike save method executes a primitive operation without cascades, relations and other operations included.
+     * Executes fast and efficient DELETE query.
+     * Does not check if entity exist in the database.
+     * Condition(s) cannot be empty.
+     */
+    softDelete<Entity>(targetOrEntity: ObjectType<Entity> | EntitySchema<Entity> | string, criteria: string | string[] | number | number[] | Date | Date[] | ObjectID | ObjectID[] | any): Promise<UpdateResult>;
+
+    /**
+     * Restores entities by a given condition(s).
+     * Unlike save method executes a primitive operation without cascades, relations and other operations included.
+     * Executes fast and efficient DELETE query.
+     * Does not check if entity exist in the database.
+     * Condition(s) cannot be empty.
+     */
+    restore<Entity>(targetOrEntity: ObjectType<Entity> | EntitySchema<Entity> | string, criteria: string | string[] | number | number[] | Date | Date[] | ObjectID | ObjectID[] | any): Promise<UpdateResult>;
 
     /**
      * Counts entities that match given find options or conditions.

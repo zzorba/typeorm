@@ -139,6 +139,11 @@ export type FindExtraOptions = {
         disableMixedMap?: boolean;
     }; // todo: extract options into separate interface, reuse
 
+    /**
+     * Indicates if soft-deleted rows should be included in entity result.
+     */
+    withDeleted?: boolean;
+
 };
 
 /**
@@ -226,4 +231,5 @@ export type QueryFindOptions<E> =
     & Pick<FindOptions<E>, "skip">
     & Pick<FindOptions<E>, "take">
     & Pick<FindExtraOptions, "loadRelationIds">
-    & Pick<FindExtraOptions, "pagination">;
+    & Pick<FindExtraOptions, "pagination">
+    & Pick<FindExtraOptions, "withDeleted">;

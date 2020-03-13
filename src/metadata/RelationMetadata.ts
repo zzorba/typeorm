@@ -125,6 +125,16 @@ export class RelationMetadata {
     isCascadeRemove: boolean = false;
 
     /**
+     * If set to true then related objects are allowed to be soft-removed from the database.
+     */
+    isCascadeSoftRemove: boolean = false;
+
+    /**
+     * If set to true then related objects are allowed to be recovered from the database.
+     */
+    isCascadeRecover: boolean = false;
+
+    /**
      * Indicates if relation column value can be nullable or not.
      */
     isNullable: boolean = true;
@@ -271,10 +281,17 @@ export class RelationMetadata {
             this.givenInverseSidePropertyFactory = args.inverseSideProperty;
 
         this.isLazy = args.isLazy || false;
+        // this.isCascadeInsert = args.options.cascade === true || (args.options.cascade instanceof Array && args.options.cascade.indexOf("insert") !== -1);
+        // this.isCascadeUpdate = args.options.cascade === true || (args.options.cascade instanceof Array && args.options.cascade.indexOf("update") !== -1);
+        // this.isCascadeRemove = args.options.cascade === true || (args.options.cascade instanceof Array && args.options.cascade.indexOf("remove") !== -1);
+        // this.isCascadeSoftRemove = args.options.cascade === true || (args.options.cascade instanceof Array && args.options.cascade.indexOf("soft-remove") !== -1);
+        // this.isCascadeRecover = args.options.cascade === true || (args.options.cascade instanceof Array && args.options.cascade.indexOf("recover") !== -1);
         this.isCascadeInsert = args.options.cascade === true || (Array.isArray(args.options.cascade) && args.options.cascade.indexOf("insert") !== -1);
         this.isCascadeUpdate = args.options.cascade === true || (Array.isArray(args.options.cascade) && args.options.cascade.indexOf("update") !== -1);
         this.isCascadeRemove = args.options.cascade === true || (Array.isArray(args.options.cascade) && args.options.cascade.indexOf("remove") !== -1);
         this.isNullable = args.options.nullable === false ? false : true;
+        this.isCascadeSoftRemove = args.options.cascade === true || (Array.isArray(args.options.cascade) && args.options.cascade.indexOf("soft-remove") !== -1);
+        this.isCascadeRecover = args.options.cascade === true || (Array.isArray(args.options.cascade) && args.options.cascade.indexOf("recover") !== -1);
         this.onDelete = args.options.onDelete;
         this.onUpdate = args.options.onUpdate;
         this.deferrable = args.options.deferrable;

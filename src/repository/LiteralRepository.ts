@@ -79,6 +79,14 @@ export function createLiteralRepository<Entity>({ manager, target, queryRunner }
             return this.manager.remove(this.getMetadata().target as any, entityOrEntities as any, options);
         },
 
+        softRemove<T extends DeepPartial<Entity>>(entityOrEntities: T | T[], options?: SaveOptions): Promise<T | T[]> {
+            return this.manager.softRemove(this.getMetadata().target as any, entityOrEntities as any, options);
+        },
+
+        recover<T extends DeepPartial<Entity>>(entityOrEntities: T | T[], options?: SaveOptions): Promise<T | T[]> {
+            return this.manager.recover(this.getMetadata().target as any, entityOrEntities as any, options);
+        },
+
         insert(entity: QueryDeepPartialEntity<Entity> | (QueryDeepPartialEntity<Entity>[])): Promise<InsertResult> {
             return this.manager.insert(this.getMetadata().target as any, entity);
         },
@@ -89,6 +97,14 @@ export function createLiteralRepository<Entity>({ manager, target, queryRunner }
 
         delete(criteria: string | string[] | number | number[] | Date | Date[] | ObjectID | ObjectID[] | FindOptionsWhere<Entity>): Promise<DeleteResult> {
             return this.manager.delete(this.getMetadata().target as any, criteria as any);
+        },
+
+        softDelete(criteria: string | string[] | number | number[] | Date | Date[] | ObjectID | ObjectID[] | FindOptionsWhere<Entity>): Promise<UpdateResult> {
+            return this.manager.softDelete(this.getMetadata().target as any, criteria as any);
+        },
+
+        restore(criteria: string | string[] | number | number[] | Date | Date[] | ObjectID | ObjectID[] | FindOptionsWhere<Entity>): Promise<UpdateResult> {
+            return this.manager.restore(this.getMetadata().target as any, criteria as any);
         },
 
         count(optionsOrConditions?: FindOptions<Entity> | FindOptionsWhere<Entity>): Promise<number> {

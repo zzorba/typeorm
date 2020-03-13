@@ -127,7 +127,8 @@ export class SelectQueryBuilder<Entity> extends QueryBuilder<Entity> implements 
             skip: normalizedFindOptions.skip,
             take: normalizedFindOptions.take,
             pagination: normalizedFindOptions.options && normalizedFindOptions.options.pagination,
-            loadRelationIds: normalizedFindOptions.options && normalizedFindOptions.options.loadRelationIds
+            loadRelationIds: normalizedFindOptions.options && normalizedFindOptions.options.loadRelationIds,
+            withDeleted: normalizedFindOptions.options && normalizedFindOptions.options.withDeleted
         };
         this.applyFindOptionsOrmOptions(normalizedFindOptions);
         return this;
@@ -1061,6 +1062,14 @@ export class SelectQueryBuilder<Entity> extends QueryBuilder<Entity> implements 
     }
 
     /**
+     * Disables the global condition of "non-deleted" for the entity with delete date columns.
+     */
+    withDeleted(): this {
+        this.expressionMap.withDeleted = true;
+        return this;
+    }
+
+    /**
      * Gets first raw result returned by execution of generated query builder sql.
      */
     async getRawOne<T = any>(): Promise<T> {
@@ -1973,6 +1982,9 @@ export class SelectQueryBuilder<Entity> extends QueryBuilder<Entity> implements 
 
             if (findOptions.options && findOptions.options.eagerRelations !== undefined) {
                 this.expressionMap.eagerRelations = findOptions.options.eagerRelations;
+            }
+            if (findOptions.options?.withDeleted != undefined) {
+                this.expressionMap.withDeleted = findOptions.options.withDeleted;
             }
 
         }

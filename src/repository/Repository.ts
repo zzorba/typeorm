@@ -146,6 +146,47 @@ export type Repository<Entity extends ObjectLiteral> = {
     remove(entity: Entity, options?: RemoveOptions): Promise<Entity>;
 
     /**
+    /**
+     * Records the delete date of all given entities.
+     */
+    softRemove<T extends DeepPartial<Entity>>(entities: T[], options: SaveOptions & { reload: false }): Promise<T[]>;
+
+    /**
+     * Records the delete date of all given entities.
+     */
+    softRemove<T extends DeepPartial<Entity>>(entities: T[], options?: SaveOptions): Promise<(T & Entity)[]>;
+
+    /**
+     * Records the delete date of a given entity.
+     */
+    softRemove<T extends DeepPartial<Entity>>(entity: T, options: SaveOptions & { reload: false }): Promise<T>;
+
+    /**
+     * Records the delete date of a given entity.
+     */
+    softRemove<T extends DeepPartial<Entity>>(entity: T, options?: SaveOptions): Promise<T & Entity>;
+
+    /**
+     * Recovers all given entities in the database.
+     */
+    recover<T extends DeepPartial<Entity>>(entities: T[], options: SaveOptions & { reload: false }): Promise<T[]>;
+
+    /**
+     * Recovers all given entities in the database.
+     */
+    recover<T extends DeepPartial<Entity>>(entities: T[], options?: SaveOptions): Promise<(T & Entity)[]>;
+
+    /**
+     * Recovers a given entity in the database.
+     */
+    recover<T extends DeepPartial<Entity>>(entity: T, options: SaveOptions & { reload: false }): Promise<T>;
+
+    /**
+     * Recovers a given entity in the database.
+     */
+    recover<T extends DeepPartial<Entity>>(entity: T, options?: SaveOptions): Promise<T & Entity>;
+
+    /**
      * Inserts a given entity into the database.
      * Unlike save method executes a primitive operation without cascades, relations and other operations included.
      * Executes fast and efficient INSERT query.
@@ -168,6 +209,22 @@ export type Repository<Entity extends ObjectLiteral> = {
      * Does not check if entity exist in the database.
      */
     delete(criteria: string|string[]|number|number[]|Date|Date[]|ObjectID|ObjectID[]|FindOptionsWhere<Entity>): Promise<DeleteResult>
+
+    /**
+     * Records the delete date of entities by a given criteria.
+     * Unlike save method executes a primitive operation without cascades, relations and other operations included.
+     * Executes fast and efficient SOFT-DELETE query.
+     * Does not check if entity exist in the database.
+     */
+    softDelete(criteria: string|string[]|number|number[]|Date|Date[]|ObjectID|ObjectID[]|FindOptionsWhere<Entity>): Promise<UpdateResult>
+
+    /**
+     * Restores entities by a given criteria.
+     * Unlike save method executes a primitive operation without cascades, relations and other operations included.
+     * Executes fast and efficient SOFT-DELETE query.
+     * Does not check if entity exist in the database.
+     */
+    restore(criteria: string|string[]|number|number[]|Date|Date[]|ObjectID|ObjectID[]|FindOptionsWhere<Entity>): Promise<UpdateResult>
 
     /**
      * Counts entities that match given options.

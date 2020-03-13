@@ -210,6 +210,46 @@ export function createLiteralEntityManager<Entity>({ connection, queryRunner }: 
                 .then(() => entity);
         },
 
+        softRemove<Entity, T extends DeepPartial<Entity>>(targetOrEntity: (T | T[]) | ObjectType<Entity> | EntitySchema<Entity> | string, maybeEntityOrOptions?: T | T[], maybeOptions?: SaveOptions): Promise<T | T[]> {
+
+            // normalize mixed parameters
+            let target = (arguments.length > 1 && (targetOrEntity instanceof Function || targetOrEntity instanceof EntitySchema || typeof targetOrEntity === "string")) ? targetOrEntity as Function | string : undefined;
+            const entity: T | T[] = target ? maybeEntityOrOptions as T | T[] : targetOrEntity as T | T[];
+            const options = target ? maybeOptions : maybeEntityOrOptions as SaveOptions;
+
+            if (target instanceof EntitySchema)
+                target = target.options.name;
+
+            // if user passed empty array of entities then we don't need to do anything
+            if (Array.isArray(entity) && entity.length === 0)
+                return Promise.resolve(entity);
+
+            // execute soft-remove operation
+            return new EntityPersistExecutor(this.connection, this.queryRunner, "soft-remove", target, entity, options)
+                .execute()
+                .then(() => entity);
+        },
+
+        recover<Entity, T extends DeepPartial<Entity>>(targetOrEntity: (T | T[]) | ObjectType<Entity> | EntitySchema<Entity> | string, maybeEntityOrOptions?: T | T[], maybeOptions?: SaveOptions): Promise<T | T[]> {
+
+            // normalize mixed parameters
+            let target = (arguments.length > 1 && (targetOrEntity instanceof Function || targetOrEntity instanceof EntitySchema || typeof targetOrEntity === "string")) ? targetOrEntity as Function | string : undefined;
+            const entity: T | T[] = target ? maybeEntityOrOptions as T | T[] : targetOrEntity as T | T[];
+            const options = target ? maybeOptions : maybeEntityOrOptions as SaveOptions;
+
+            if (target instanceof EntitySchema)
+                target = target.options.name;
+
+            // if user passed empty array of entities then we don't need to do anything
+            if (Array.isArray(entity) && entity.length === 0)
+                return Promise.resolve(entity);
+
+            // execute recover operation
+            return new EntityPersistExecutor(this.connection, this.queryRunner, "recover", target, entity, options)
+                .execute()
+                .then(() => entity);
+        },
+
         async insert<Entity>(target: EntityTarget<Entity>, entity: QueryDeepPartialEntity<Entity> | (QueryDeepPartialEntity<Entity>[])): Promise<InsertResult> {
 
             // TODO: Oracle does not support multiple values. Need to create another nice solution.
@@ -280,6 +320,68 @@ export function createLiteralEntityManager<Entity>({ connection, queryRunner }: 
             } else {
                 return this.createQueryBuilder()
                     .delete()
+                    .from(targetOrEntity)
+                    .where(criteria)
+                    .execute();
+            }
+        },
+
+        softDelete<Entity>(targetOrEntity: ObjectType<Entity> | EntitySchema<Entity> | string, criteria: string | string[] | number | number[] | Date | Date[] | ObjectID | ObjectID[] | any): Promise<UpdateResult> {
+
+            // if user passed empty criteria or empty list of criterias, then throw an error
+            if (criteria === undefined ||
+                criteria === null ||
+                criteria === "" ||
+                (Array.isArray(criteria) && criteria.length === 0)) {
+
+                return Promise.reject(new Error(`Empty criteria(s) are not allowed for the delete method.`));
+            }
+
+            if (typeof criteria === "string" ||
+                typeof criteria === "number" ||
+                criteria instanceof Date ||
+                Array.isArray(criteria)) {
+
+                return this.createQueryBuilder()
+                    .softDelete()
+                    .from(targetOrEntity)
+                    .whereInIds(criteria)
+                    .execute();
+
+            } else {
+                return this.createQueryBuilder()
+                    .softDelete()
+                    .from(targetOrEntity)
+                    .where(criteria)
+                    .execute();
+            }
+        },
+
+    restore<Entity>(targetOrEntity: ObjectType<Entity> | EntitySchema<Entity> | string, criteria: string | string[] | number | number[] | Date | Date[] | ObjectID | ObjectID[] | any): Promise<UpdateResult> {
+
+            // if user passed empty criteria or empty list of criterias, then throw an error
+            if (criteria === undefined ||
+                criteria === null ||
+                criteria === "" ||
+                (Array.isArray(criteria) && criteria.length === 0)) {
+
+                return Promise.reject(new Error(`Empty criteria(s) are not allowed for the delete method.`));
+            }
+
+            if (typeof criteria === "string" ||
+                typeof criteria === "number" ||
+                criteria instanceof Date ||
+                Array.isArray(criteria)) {
+
+                return this.createQueryBuilder()
+                    .restore()
+                    .from(targetOrEntity)
+                    .whereInIds(criteria)
+                    .execute();
+
+            } else {
+                return this.createQueryBuilder()
+                    .restore()
                     .from(targetOrEntity)
                     .where(criteria)
                     .execute();
