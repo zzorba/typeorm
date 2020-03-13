@@ -17,7 +17,7 @@ import { RemoveOptions } from "../repository/RemoveOptions";
 import { Repository } from "../repository/Repository";
 import { SaveOptions } from "../repository/SaveOptions";
 import { TreeRepository } from "../repository/TreeRepository";
-import { EntitySchema } from '..';
+import { EntitySchema } from "..";
 
 /**
  * Entity manager supposed to work with any entity, automatically find its repository and call its methods,

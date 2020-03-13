@@ -1983,7 +1983,7 @@ export class SelectQueryBuilder<Entity> extends QueryBuilder<Entity> implements 
             if (findOptions.options && findOptions.options.eagerRelations !== undefined) {
                 this.expressionMap.eagerRelations = findOptions.options.eagerRelations;
             }
-            if (findOptions.options?.withDeleted != undefined) {
+            if (findOptions.options?.withDeleted !== undefined) {
                 this.expressionMap.withDeleted = findOptions.options.withDeleted;
             }
 
